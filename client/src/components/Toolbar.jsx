@@ -1,44 +1,73 @@
 import React from 'react'
 import '../styles/bar.scss'
+
 import BrushIcon from '@mui/icons-material/Brush'
-import { IconButton } from '@mui/material'
-import Input from '@mui/material/Input';
-import Brush from '../tools/Brush';
+import Crop169Icon from '@mui/icons-material/Crop169'
+import AutoFixNormalIcon from '@mui/icons-material/AutoFixNormal'
+import RedoIcon from '@mui/icons-material/Redo'
+import UndoIcon from '@mui/icons-material/Undo'
 
-import toolState from '../store/toolState';
-import canvasState from '../store/canvasState';
+import { IconButton, TextField } from '@mui/material'
 
-const toolStyles = { color: 'white' }
+import Brush from '../tools/Brush'
+import Rect from '../tools/Rect'
+
+import toolState from '../store/toolState'
+import canvasState from '../store/canvasState'
+import Eraser from '../tools/Eraser'
 
 const Toolbar = () => {
+    const changeColor = e => {
+        toolState.setStrokeColor(e.target.value)
+        toolState.setFillColor(e.target.value)
+    }
+
     return (
         <div className="bar">
             <div className="tools">
-                <IconButton style={toolStyles} onClick={() => toolState.setTool(new Brush(canvasState.canvas))}>
+                <IconButton
+                    onClick={() =>
+                        toolState.setTool(new Brush(canvasState.canvas))
+                    }
+                >
                     <BrushIcon />
                 </IconButton>
-                <IconButton style={toolStyles}>
+                <IconButton
+                    onClick={() =>
+                        toolState.setTool(new Rect(canvasState.canvas))
+                    }
+                >
+                    <Crop169Icon />
+                </IconButton>
+                <IconButton
+                    onClick={() =>
+                        toolState.setTool(new Eraser(canvasState.canvas))
+                    }
+                >
+                    <AutoFixNormalIcon />
+                </IconButton>
+                <IconButton>
                     <BrushIcon />
                 </IconButton>
-                <IconButton style={toolStyles}>
+                <IconButton>
                     <BrushIcon />
                 </IconButton>
-                <IconButton style={toolStyles}>
-                    <BrushIcon />
-                </IconButton>
-                <IconButton style={toolStyles}>
-                    <BrushIcon />
-                </IconButton>
-                <Input type='color' style={{ width: "30px"}} />
+                <TextField
+                    label="Цвет"
+                    type="color"
+                    style={{ width: '100px' }}
+                    size="small"
+                    onChange={changeColor}
+                />
             </div>
             <div className="tools">
-                <IconButton style={toolStyles}>
-                    <BrushIcon />
+                <IconButton onClick={() => canvasState.undo()}>
+                    <UndoIcon />
                 </IconButton>
-                <IconButton style={toolStyles}>
-                    <BrushIcon />
+                <IconButton onClick={() => canvasState.redo()}>
+                    <RedoIcon />
                 </IconButton>
-                <IconButton style={toolStyles}>
+                <IconButton>
                     <BrushIcon />
                 </IconButton>
             </div>
