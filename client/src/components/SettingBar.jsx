@@ -13,11 +13,25 @@ const SettingBar = () => {
                 <TextField
                     label="Толщина линии"
                     type="number"
-                    min="1"
-                    max="50"
+                    inputProps={{
+                        min: "1",
+                        max: '50',
+                    }}
                     defaultValue={1}
                     size="small"
                     onChange={e => toolState.setLineWidth(e.target.value)}
+                />
+                <TextField
+                    label="Прозрачность"
+                    type="number"
+                    inputProps={{
+                        min: '0',
+                        max: '1',
+                        step: '0.1',
+                    }}
+                    defaultValue={1}
+                    size="small"
+                    onChange={e => toolState.setGlobalAlpha(e.target.value)}
                 />
                 <TextField
                     label="Цвет обводки"
