@@ -14,6 +14,12 @@ import { useParams } from 'react-router-dom'
 import Rect from '../tools/Rect'
 
 import axios from 'axios'
+import Circle from '../tools/Circle'
+import Line from '../tools/Line'
+
+import { v4 as uuidv4 } from 'uuid'
+
+const scaleRatio = 1.05
 
 const Canvas = observer(() => {
     const canvasRef = useRef()
@@ -30,16 +36,26 @@ const Canvas = observer(() => {
 
     useEffect(() => {
         canvasState.setCanvas(canvasRef.current)
-        axios.get(`http://localhost:5000/image?id=${id}`)
-            .then(res => {
-                const ctx = canvasRef.current.getContext('2d')
-                const img = new Image()
-                img.src = res.data
-                img.onload = () => {
-                    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
-                    ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height)
-                }
-            })
+        axios.get(`http://localhost:5000/image?id=${id}`).then(res => {
+            const ctx = canvasRef.current.getContext('2d')
+            const img = new Image()
+            img.src = res.data
+            img.onload = () => {
+                ctx.clearRect(
+                    0,
+                    0,
+                    canvasRef.current.width,
+                    canvasRef.current.height
+                )
+                ctx.drawImage(
+                    img,
+                    0,
+                    0,
+                    canvasRef.current.width,
+                    canvasRef.current.height
+                )
+            }
+        })
     }, [])
 
     useEffect(() => {
@@ -47,7 +63,15 @@ const Canvas = observer(() => {
             const socket = new WebSocket(`ws://localhost:5000/`)
             canvasState.setSocket(socket)
             canvasState.setSessionId(id)
-            toolState.setTool(new Brush(canvasRef.current, socket, id))
+            toolState.setTool(
+                new Brush(
+                    canvasState.canvas,
+                    canvasState.socket,
+                    canvasState.sessionid,
+                    canvasState.uid,
+                    toolState
+                )
+            )
             socket.onopen = () => {
                 socket.send(
                     JSON.stringify({
@@ -60,10 +84,12 @@ const Canvas = observer(() => {
             socket.onmessage = event => {
                 let msg = JSON.parse(event.data)
                 switch (msg.method) {
-                    case "connection":
-                        console.log(`Пользователь ${msg.username} присоединился`)
+                    case 'connection':
+                        console.log(
+                            `Пользователь ${msg.username} присоединился`
+                        )
                         break
-                    case "draw":
+                    case 'draw':
                         drawHandler(msg)
                         break
                 }
@@ -71,19 +97,34 @@ const Canvas = observer(() => {
         }
     }, [canvasState.username])
 
-    const drawHandler = (msg) => {
-        const figure = msg.figure
+    const drawHandler = msg => {
+        const { figure, uid } = msg
         const ctx = canvasRef.current.getContext('2d')
-        switch (figure.type) {
-            case "brush":
-                Brush.draw(ctx, figure.x, figure.y)
-                break
-            case "rect":
-                Rect.staticDraw(ctx, figure.x, figure.y, figure.width, figure.height)
-                break
-            case "finish":
-                ctx.beginPath()
-                break
+        if (uid !== canvasState.uid) {
+            switch (figure.type) {
+                case 'brush':
+                    Brush.draw(ctx, figure, toolState)
+                    break
+                case 'rect':
+                    Rect.staticDraw(ctx, figure, toolState)
+                    break
+                case 'circle':
+                    Circle.staticDraw(ctx, figure, toolState)
+                    break
+                case 'line':
+                    Line.staticDraw(
+                        ctx,
+                        figure.x,
+                        figure.y,
+                        figure.x1,
+                        figure.y1,
+                        figure.color
+                    )
+                    break
+                case 'finish':
+                    ctx.beginPath()
+                    break
+            }
         }
     }
 
@@ -92,7 +133,10 @@ const Canvas = observer(() => {
     }
 
     const mouseUpHandler = () => {
-        axios.post(`http://localhost:5000/image?id=${id}`, {img: canvasRef.current.toDataURL()})
+        axios
+            .post(`http://localhost:5000/image?id=${id}`, {
+                img: canvasRef.current.toDataURL(),
+            })
             .then(response => console.log(response.data))
     }
 
@@ -100,7 +144,22 @@ const Canvas = observer(() => {
 
     const connectionHandler = () => {
         canvasState.setUsername(usernameRef.current.value)
+        canvasState.setUid(uuidv4())
         handleClose()
+    }
+
+    const handleWheel = e => {
+        if (e.deltaY > 0) {
+            setCanvasSettings(settings => ({
+                width: settings.width * scaleRatio,
+                height: settings.height * scaleRatio,
+            }))
+            return
+        }
+        setCanvasSettings(settings => ({
+            width: settings.width / scaleRatio,
+            height: settings.height / scaleRatio,
+        }))
     }
 
     return (

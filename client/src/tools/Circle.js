@@ -1,13 +1,12 @@
 import Tool from './Tool'
 
-export default class Rect extends Tool {
+export default class Circle extends Tool {
     mouseUpHandler() {
         super.mouseUpHandler({
-            type: 'rect',
+            type: 'circle',
             x: this.startX,
             y: this.startY,
             width: this.width,
-            height: this.height,
         })
     }
 
@@ -21,32 +20,27 @@ export default class Rect extends Tool {
     mouseMoveHandler(e) {
         if (this.mouseDown) {
             let currentX = e.pageX - e.target.offsetLeft
-            let currentY = e.pageY - e.target.offsetTop
-
             this.width = currentX - this.startX
-            this.height = currentY - this.startY
-
-            this.draw(this.startX, this.startY, this.width, this.height)
+            this.draw(this.startX, this.startY, this.width)
         }
     }
 
-    draw(x, y, w, h) {
+    draw(x, y, w) {
         const img = new Image()
         img.src = this.saved
         img.onload = () => {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
             this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height)
             this.ctx.beginPath()
-            this.ctx.rect(x, y, w, h)
+            this.ctx.arc(x, y, w, 0, 360)
             this.ctx.fill()
             this.ctx.stroke()
-            this.ctx.beginPath()
         }
     }
 
     static staticDraw(ctx, figure, toolState) {
         super.staticDraw(ctx, figure, toolState, f => {
-            ctx.rect(f.x, f.y, f.width, f.height)
+            ctx.arc(f.x, f.y, f.width, 0, 360)
             ctx.fill()
             ctx.stroke()
         })

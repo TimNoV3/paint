@@ -6,7 +6,10 @@ import Crop169Icon from '@mui/icons-material/Crop169'
 import AutoFixNormalIcon from '@mui/icons-material/AutoFixNormal'
 import RedoIcon from '@mui/icons-material/Redo'
 import UndoIcon from '@mui/icons-material/Undo'
-import SaveIcon from '@mui/icons-material/Save';
+import SaveIcon from '@mui/icons-material/Save'
+import ShowChartIcon from '@mui/icons-material/ShowChart'
+import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined'
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { IconButton, TextField } from '@mui/material'
 
@@ -16,10 +19,11 @@ import Rect from '../tools/Rect'
 import toolState from '../store/toolState'
 import canvasState from '../store/canvasState'
 import Eraser from '../tools/Eraser'
+import Circle from '../tools/Circle'
+import Line from '../tools/Line'
 
 const Toolbar = () => {
     const changeColor = e => {
-        toolState.setStrokeColor(e.target.value)
         toolState.setFillColor(e.target.value)
     }
 
@@ -27,10 +31,15 @@ const Toolbar = () => {
         const dataUrl = canvasState.canvas.toDataURL()
         const a = document.createElement('a')
         a.href = dataUrl
-        a.download = canvasState.sessionid + ".jpg"
+        a.download = canvasState.sessionid + '.jpg'
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
+    }
+
+    const clearCanvas = () => {
+        const ctx = canvasState.canvas.getContext('2d')
+        ctx.clearRect(0, 0, canvasState.canvas.width, canvasState.canvas.height)
     }
 
     return (
@@ -38,30 +47,78 @@ const Toolbar = () => {
             <div className="tools">
                 <IconButton
                     onClick={() =>
-                        toolState.setTool(new Brush(canvasState.canvas, canvasState.socket, canvasState.sessionid))
+                        toolState.setTool(
+                            new Brush(
+                                canvasState.canvas,
+                                canvasState.socket,
+                                canvasState.sessionid,
+                                canvasState.uid,
+                                toolState
+                            )
+                        )
                     }
                 >
                     <BrushIcon />
                 </IconButton>
                 <IconButton
                     onClick={() =>
-                        toolState.setTool(new Rect(canvasState.canvas, canvasState.socket, canvasState.sessionid))
+                        toolState.setTool(
+                            new Rect(
+                                canvasState.canvas,
+                                canvasState.socket,
+                                canvasState.sessionid,
+                                canvasState.uid,
+                                toolState
+                            )
+                        )
                     }
                 >
                     <Crop169Icon />
                 </IconButton>
                 <IconButton
                     onClick={() =>
-                        toolState.setTool(new Eraser(canvasState.canvas))
+                        toolState.setTool(
+                            new Eraser(
+                                canvasState.canvas,
+                                canvasState.socket,
+                                canvasState.sessionid,
+                                canvasState.uid,
+                                toolState
+                            )
+                        )
                     }
                 >
                     <AutoFixNormalIcon />
                 </IconButton>
-                <IconButton>
-                    <BrushIcon />
+                <IconButton
+                    onClick={() =>
+                        toolState.setTool(
+                            new Circle(
+                                canvasState.canvas,
+                                canvasState.socket,
+                                canvasState.sessionid,
+                                canvasState.uid,
+                                toolState
+                            )
+                        )
+                    }
+                >
+                    <CircleOutlinedIcon />
                 </IconButton>
-                <IconButton>
-                    <BrushIcon />
+                <IconButton
+                    onClick={() =>
+                        toolState.setTool(
+                            new Line(
+                                canvasState.canvas,
+                                canvasState.socket,
+                                canvasState.sessionid,
+                                canvasState.uid,
+                                toolState
+                            )
+                        )
+                    }
+                >
+                    <ShowChartIcon />
                 </IconButton>
                 <TextField
                     label="Цвет"
@@ -80,6 +137,9 @@ const Toolbar = () => {
                 </IconButton>
                 <IconButton onClick={() => download()}>
                     <SaveIcon />
+                </IconButton>
+                <IconButton onClick={() => clearCanvas()}>
+                    <DeleteIcon />
                 </IconButton>
             </div>
         </div>

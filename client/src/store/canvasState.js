@@ -7,9 +7,14 @@ class CanvasState {
     undoList = []
     redoList = []
     username = ''
+    uid = ''
 
     constructor() {
         makeAutoObservable(this)
+    }
+
+    setUid(id) {
+        this.uid = id
     }
 
     setSessionId(id) {

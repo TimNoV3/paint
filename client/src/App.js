@@ -5,8 +5,6 @@ import './styles/app.scss'
 
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
 
-// import {  Redirect } from "react-router";
-
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 
 const darkTheme = createTheme({
